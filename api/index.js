@@ -5,7 +5,11 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://petpal-plaza.web.app/",
+  })
+);
 app.use(bodyParser.json());
 
 const Pet = require("../models/Pet");
