@@ -8,46 +8,24 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const connectDB = async () => {
+const Pet = require("../models/Pet");
+
+app.use(async (req, res, next) => {
   try {
-    console.log(
-      "Attempting to connect to MongoDB with URI:",
-      process.env.MONGO_URI
-    );
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 15000,
     });
-    console.log("MongoDB connected successfully");
+    console.log("MongoDB connected for request");
+    next();
   } catch (err) {
-    console.error("MongoDB connection error:", err.message, err.stack);
-    throw new Error(`MongoDB connection failed: ${err.message}`);
-  }
-};
-
-let isConnected = false;
-
-(async () => {
-  try {
-    await connectDB();
-    isConnected = true;
-    console.log("Serverless function ready with MongoDB connection");
-  } catch (err) {
-    console.error("Failed to initialize serverless function:", err);
-  }
-})();
-
-app.use((req, res, next) => {
-  if (!isConnected) {
-    return res
+    console.error("MongoDB connection error for request:", err);
+    res
       .status(503)
       .json({ error: "Service unavailable: Database not connected" });
   }
-  next();
 });
-
-const Pet = require("../models/Pet");
 
 // CRUD Routes
 app.get("/api/pets", async (req, res) => {
