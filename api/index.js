@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 require("dotenv").config();
+const admin = require("firebase-admin");
 
 const app = express();
 app.use(
@@ -11,6 +12,26 @@ app.use(
   })
 );
 app.use(bodyParser.json());
+
+admin.initializeApp({
+  credential: admin.credential.cert("./petpal-plaza-firebase-adminsdk.json"),
+});
+
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized: No token provided" });
+  }
+  const token = authHeader.split("Bearer ")[1];
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.userId = decodedToken.uid;
+    next();
+  } catch (err) {
+    console.error("Token verification error:", err);
+    res.status(401).json({ error: "Invalid token" });
+  }
+};
 
 const Pet = require("../models/Pet");
 
@@ -64,11 +85,11 @@ app.post("/api/pets", async (req, res) => {
   }
 });
 
-app.put("/api/pets/:id", async (req, res) => {
+app.put("/api/pets/:id", authenticate, async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     if (!pet) return res.status(404).json({ error: "Pet not found" });
-    if (pet.ownerId !== req.body.ownerId)
+    if (pet.ownerId !== req.userId)
       return res.status(403).json({ error: "Unauthorized" });
     const updatedPet = await Pet.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -80,11 +101,11 @@ app.put("/api/pets/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/pets/:id", async (req, res) => {
+app.delete("/api/pets/:id", authenticate, async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     if (!pet) return res.status(404).json({ error: "Pet not found" });
-    if (pet.ownerId !== req.query.ownerId)
+    if (pet.ownerId !== req.userId)
       return res.status(403).json({ error: "Unauthorized" });
     await Pet.findByIdAndDelete(req.params.id);
     res.json({ message: "Pet deleted" });
