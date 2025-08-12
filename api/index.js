@@ -21,10 +21,12 @@ const connectDB = async () => {
   }
 };
 
+connectDB();
+
 const Pet = require("../models/Pet");
 
 // CRUD Routes
-app.get("/pets", async (req, res) => {
+app.get("/api/pets", async (req, res) => {
   try {
     const pets = await Pet.find();
     res.json(pets);
@@ -33,7 +35,7 @@ app.get("/pets", async (req, res) => {
   }
 });
 
-app.get("/pets/:id", async (req, res) => {
+app.get("/api/pets/:id", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     res.json(pet);
@@ -42,7 +44,7 @@ app.get("/pets/:id", async (req, res) => {
   }
 });
 
-app.post("/pets", async (req, res) => {
+app.post("/api/pets", async (req, res) => {
   try {
     const pet = new Pet(req.body);
     await pet.save();
@@ -52,7 +54,7 @@ app.post("/pets", async (req, res) => {
   }
 });
 
-app.put("/pets/:id", async (req, res) => {
+app.put("/api/pets/:id", async (req, res) => {
   try {
     const pet = await Pet.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -63,7 +65,7 @@ app.put("/pets/:id", async (req, res) => {
   }
 });
 
-app.delete("/pets/:id", async (req, res) => {
+app.delete("/api/pets/:id", async (req, res) => {
   try {
     await Pet.findByIdAndDelete(req.params.id);
     res.json({ message: "Pet deleted" });
@@ -72,7 +74,7 @@ app.delete("/pets/:id", async (req, res) => {
   }
 });
 
-app.post("/pets/:id/likes", async (req, res) => {
+app.post("/api/pets/:id/likes", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     if (!pet.likes.includes(req.body.userId)) {
@@ -85,7 +87,7 @@ app.post("/pets/:id/likes", async (req, res) => {
   }
 });
 
-app.post("/pets/:id/comments", async (req, res) => {
+app.post("/api/pets/:id/comments", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     pet.comments.push(req.body);
@@ -96,4 +98,7 @@ app.post("/pets/:id/comments", async (req, res) => {
   }
 });
 
-module.exports = app;
+(async () => {
+  await connectDB();
+  module.exports = app;
+})();
