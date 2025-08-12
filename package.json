@@ -1,0 +1,28 @@
+{
+  "name": "petpal-plaza-backend",
+  "version": "1.0.0",
+  "description": "Backend for petpal-plaza SPA",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/4u6kopek/petpal-plaza-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/4u6kopek/petpal-plaza-backend/issues"
+  },
+  "homepage": "https://github.com/4u6kopek/petpal-plaza-backend#readme",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mongoose": "^8.17.1"
+  }
+}
