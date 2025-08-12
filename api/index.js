@@ -17,16 +17,14 @@ const connectDB = async () => {
     console.log("MongoDB connected successfully");
   } catch (err) {
     console.error("MongoDB connection error:", err);
-    process.exit(1); // Exit if connection fails
+    throw err;
   }
 };
 
-connectDB();
-
-const Pet = require("./models/Pet");
+const Pet = require("../models/Pet");
 
 // CRUD Routes
-app.get("/api/pets", async (req, res) => {
+app.get("/pets", async (req, res) => {
   try {
     const pets = await Pet.find();
     res.json(pets);
@@ -35,7 +33,7 @@ app.get("/api/pets", async (req, res) => {
   }
 });
 
-app.get("/api/pets/:id", async (req, res) => {
+app.get("/pets/:id", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     res.json(pet);
@@ -44,7 +42,7 @@ app.get("/api/pets/:id", async (req, res) => {
   }
 });
 
-app.post("/api/pets", async (req, res) => {
+app.post("/pets", async (req, res) => {
   try {
     const pet = new Pet(req.body);
     await pet.save();
@@ -54,7 +52,7 @@ app.post("/api/pets", async (req, res) => {
   }
 });
 
-app.put("/api/pets/:id", async (req, res) => {
+app.put("/pets/:id", async (req, res) => {
   try {
     const pet = await Pet.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -65,7 +63,7 @@ app.put("/api/pets/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/pets/:id", async (req, res) => {
+app.delete("/pets/:id", async (req, res) => {
   try {
     await Pet.findByIdAndDelete(req.params.id);
     res.json({ message: "Pet deleted" });
@@ -74,7 +72,7 @@ app.delete("/api/pets/:id", async (req, res) => {
   }
 });
 
-app.post("/api/pets/:id/likes", async (req, res) => {
+app.post("/pets/:id/likes", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     if (!pet.likes.includes(req.body.userId)) {
@@ -87,7 +85,7 @@ app.post("/api/pets/:id/likes", async (req, res) => {
   }
 });
 
-app.post("/api/pets/:id/comments", async (req, res) => {
+app.post("/pets/:id/comments", async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     pet.comments.push(req.body);
@@ -98,5 +96,4 @@ app.post("/api/pets/:id/comments", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;
