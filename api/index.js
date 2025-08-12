@@ -10,18 +10,42 @@ app.use(bodyParser.json());
 
 const connectDB = async () => {
   try {
+    console.log(
+      "Attempting to connect to MongoDB with URI:",
+      process.env.MONGO_URI
+    );
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 15000,
     });
     console.log("MongoDB connected successfully");
   } catch (err) {
-    console.error("MongoDB connection error:", err);
-    throw err;
+    console.error("MongoDB connection error:", err.message, err.stack);
+    throw new Error(`MongoDB connection failed: ${err.message}`);
   }
 };
 
-connectDB();
+let isConnected = false;
+
+(async () => {
+  try {
+    await connectDB();
+    isConnected = true;
+    console.log("Serverless function ready with MongoDB connection");
+  } catch (err) {
+    console.error("Failed to initialize serverless function:", err);
+  }
+})();
+
+app.use((req, res, next) => {
+  if (!isConnected) {
+    return res
+      .status(503)
+      .json({ error: "Service unavailable: Database not connected" });
+  }
+  next();
+});
 
 const Pet = require("../models/Pet");
 
@@ -31,6 +55,7 @@ app.get("/api/pets", async (req, res) => {
     const pets = await Pet.find();
     res.json(pets);
   } catch (err) {
+    console.error("Error in GET /api/pets:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -40,6 +65,7 @@ app.get("/api/pets/:id", async (req, res) => {
     const pet = await Pet.findById(req.params.id);
     res.json(pet);
   } catch (err) {
+    console.error("Error in GET /api/pets/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -50,6 +76,7 @@ app.post("/api/pets", async (req, res) => {
     await pet.save();
     res.json(pet);
   } catch (err) {
+    console.error("Error in POST /api/pets:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -61,6 +88,7 @@ app.put("/api/pets/:id", async (req, res) => {
     });
     res.json(pet);
   } catch (err) {
+    console.error("Error in PUT /api/pets/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -70,6 +98,7 @@ app.delete("/api/pets/:id", async (req, res) => {
     await Pet.findByIdAndDelete(req.params.id);
     res.json({ message: "Pet deleted" });
   } catch (err) {
+    console.error("Error in DELETE /api/pets/:id:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -83,6 +112,7 @@ app.post("/api/pets/:id/likes", async (req, res) => {
     }
     res.json(pet);
   } catch (err) {
+    console.error("Error in POST /api/pets/:id/likes:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -94,11 +124,9 @@ app.post("/api/pets/:id/comments", async (req, res) => {
     await pet.save();
     res.json(pet);
   } catch (err) {
+    console.error("Error in POST /api/pets/:id/comments:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-(async () => {
-  await connectDB();
-  module.exports = app;
-})();
+module.exports = app;
