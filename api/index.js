@@ -14,7 +14,9 @@ app.use(
 app.use(bodyParser.json());
 
 admin.initializeApp({
-  credential: admin.credential.cert("./petpal-plaza-firebase-adminsdk.json"),
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+  ),
 });
 
 const authenticate = async (req, res, next) => {
@@ -154,6 +156,11 @@ app.post("/api/pets/:id/comments", async (req, res) => {
     console.error("Error in POST /api/pets/:id/comments:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
