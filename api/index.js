@@ -8,7 +8,7 @@ const admin = require("firebase-admin");
 const app = express();
 app.use(
   cors({
-    origin: "https://petpal-plaza.web.app",
+    origin: ["https://petpal-plaza.web.app", "http://localhost:4200"],
   })
 );
 app.use(bodyParser.json());
@@ -76,7 +76,7 @@ app.get("/api/pets/:id", async (req, res) => {
   }
 });
 
-app.post("/api/pets", async (req, res) => {
+app.post("/api/pets", authenticate, async (req, res) => {
   try {
     const pet = new Pet(req.body);
     await pet.save();
@@ -117,12 +117,12 @@ app.delete("/api/pets/:id", authenticate, async (req, res) => {
   }
 });
 
-app.post("/api/pets/:id/likes", async (req, res) => {
+app.post("/api/pets/:id/likes", authenticate, async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     if (!pet) return res.status(404).json({ error: "Pet not found" });
-    if (!pet.likes.includes(req.body.userId)) {
-      pet.likes.push(req.body.userId);
+    if (!pet.likes.includes(req.userId)) {
+      pet.likes.push(req.userId);
       await pet.save();
     }
     res.json(pet);
@@ -132,11 +132,11 @@ app.post("/api/pets/:id/likes", async (req, res) => {
   }
 });
 
-app.delete("/api/pets/:id/likes", async (req, res) => {
+app.delete("/api/pets/:id/likes", authenticate, async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     if (!pet) return res.status(404).json({ error: "Pet not found" });
-    pet.likes = pet.likes.filter((id) => id !== req.body.userId);
+    pet.likes = pet.likes.filter((id) => id !== req.userId);
     await pet.save();
     res.json(pet);
   } catch (err) {
@@ -145,11 +145,11 @@ app.delete("/api/pets/:id/likes", async (req, res) => {
   }
 });
 
-app.post("/api/pets/:id/comments", async (req, res) => {
+app.post("/api/pets/:id/comments", authenticate, async (req, res) => {
   try {
     const pet = await Pet.findById(req.params.id);
     if (!pet) return res.status(404).json({ error: "Pet not found" });
-    pet.comments.push(req.body);
+    pet.comments.push({ ...req.body, authorId: req.userId });
     await pet.save();
     res.json(pet);
   } catch (err) {
