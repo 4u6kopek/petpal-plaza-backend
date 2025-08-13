@@ -1,43 +1,99 @@
-require("dotenv").config();
 const mongoose = require("mongoose");
 const Pet = require("./models/Pet");
 
-const seedPets = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("MongoDB connected for seeding");
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-    const pets = [
+const pets = [
+  {
+    name: "Fluffy",
+    species: "Cat",
+    age: 2,
+    description: "A fluffy and playful cat.",
+    ownerId: "user1",
+    likes: ["user2", "user3"],
+    comments: [
       {
-        name: "Fluffy",
-        species: "Cat",
-        age: 2,
-        description: "Cute and fluffy cat",
-        ownerId: "test-owner1",
-        likes: [],
-        comments: [],
+        content: "So cute!",
+        authorId: "user2",
+        createdAt: new Date(),
       },
+    ],
+    imageUrl: "https://example.com/fluffy.jpg",
+  },
+  {
+    name: "Buddy",
+    species: "Dog",
+    age: 3,
+    description: "A loyal and friendly dog.",
+    ownerId: "user1",
+    likes: ["user1", "user4"],
+    comments: [
       {
-        name: "Buddy",
-        species: "Dog",
-        age: 3,
-        description: "Friendly dog",
-        ownerId: "test-owner2",
-        likes: [],
-        comments: [],
+        content: "Great companion!",
+        authorId: "user4",
+        createdAt: new Date(),
       },
-    ];
+    ],
+    imageUrl: "https://example.com/buddy.jpg",
+  },
+  {
+    name: "Whiskers",
+    species: "Cat",
+    age: 1,
+    description: "A curious kitten.",
+    ownerId: "user2",
+    likes: ["user1"],
+    comments: [
+      {
+        content: "Adorable!",
+        authorId: "user1",
+        createdAt: new Date(),
+      },
+    ],
+    imageUrl: "https://example.com/whiskers.jpg",
+  },
+  {
+    name: "Rocky",
+    species: "Dog",
+    age: 4,
+    description: "A strong and energetic dog.",
+    ownerId: "user3",
+    likes: ["user2", "user3", "user4"],
+    comments: [
+      {
+        content: "Very active!",
+        authorId: "user3",
+        createdAt: new Date(),
+      },
+    ],
+    imageUrl: "https://example.com/rocky.jpg",
+  },
+  {
+    name: "Mittens",
+    species: "Cat",
+    age: 2,
+    description: "A gentle and soft cat.",
+    ownerId: "user4",
+    likes: [],
+    comments: [
+      {
+        content: "So calm!",
+        authorId: "user1",
+        createdAt: new Date(),
+      },
+    ],
+    imageUrl: "https://example.com/mittens.jpg",
+  },
+];
 
-    await Pet.insertMany(pets);
-    console.log("Sample data added");
-    process.exit(0);
-  } catch (err) {
-    console.error("Seeding error:", err);
-    process.exit(1);
-  }
-};
+async function seed() {
+  await Pet.deleteMany();
+  await Pet.insertMany(pets);
+  console.log("Database seeded with 5 pets");
+  mongoose.connection.close();
+}
 
-seedPets();
+seed().catch(console.error);
