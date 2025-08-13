@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const Pet = require("./models/Pet");
 
@@ -90,10 +91,15 @@ const pets = [
 ];
 
 async function seed() {
-  await Pet.deleteMany();
-  await Pet.insertMany(pets);
-  console.log("Database seeded with 5 pets");
-  mongoose.connection.close();
+  try {
+    await Pet.deleteMany();
+    await Pet.insertMany(pets);
+    console.log("Database seeded with 5 pets");
+  } catch (err) {
+    console.error("Seeding error:", err);
+  } finally {
+    mongoose.connection.close();
+  }
 }
 
-seed().catch(console.error);
+seed();
