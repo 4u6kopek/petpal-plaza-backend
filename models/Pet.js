@@ -14,6 +14,7 @@ const petSchema = new mongoose.Schema({
   ownerId: { type: String, required: true },
   likes: [{ type: String }],
   comments: [commentSchema],
+  imageUrl: { type: String },
 });
 
 module.exports = mongoose.model("Pet", petSchema);
