@@ -8,7 +8,7 @@ const admin = require("firebase-admin");
 const app = express();
 app.use(
   cors({
-    origin: "https://petpal-plaza.web.app/",
+    origin: "https://petpal-plaza.web.app",
   })
 );
 app.use(bodyParser.json());
