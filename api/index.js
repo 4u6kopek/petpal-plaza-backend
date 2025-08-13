@@ -54,6 +54,16 @@ app.use(async (req, res, next) => {
   }
 });
 
+app.get("/api/users/:uid", async (req, res) => {
+  try {
+    const user = await admin.auth().getUser(req.params.uid);
+    res.json({ displayName: user.displayName || "Unknown User" });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(404).json({ error: "User not found" });
+  }
+});
+
 // CRUD Routes for Pets
 app.get("/api/pets", async (req, res) => {
   try {
